@@ -42,4 +42,4 @@ jobs:
         run: |
           git add profile/README.md
           git commit -m 'Update top contributors'
-          git push https://github-actions:$ACTIONS_PAT@github.com/TrussIntelligence/.github.git HEAD:main
+          git push https://github-actions:$ACTIONS_PAT@github.com/TrussInt/.github.git HEAD:main
