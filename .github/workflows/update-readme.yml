@@ -29,7 +29,7 @@ jobs:
             CONTRIBUTORS_TABLE="$CONTRIBUTORS_TABLE\n| $rank | @$login | $contributions commits |"
             rank=$((rank + 1))
           done < top_contributors.txt
-          sed -i '/<!-- TOP_CONTRIBUTORS_START -->/,/<!-- TOP_CONTRIBUTORS_END -->/c\<!-- TOP_CONTRIBUTORS_START -->\n$CONTRIBUTORS_TABLE\n<!-- TOP_CONTRIBUTORS_END -->' README.md
+          sed -i '/<!-- TOP_CONTRIBUTORS_START -->/,/<!-- TOP_CONTRIBUTORS_END -->/c\<!-- TOP_CONTRIBUTORS_START -->\n$CONTRIBUTORS_TABLE\n<!-- TOP_CONTRIBUTORS_END -->' profile/README.md
 
       - name: Commit changes
         run: |
