@@ -31,15 +31,15 @@ jobs:
           done < top_contributors.txt
           sed -i '/<!-- TOP_CONTRIBUTORS_START -->/,/<!-- TOP_CONTRIBUTORS_END -->/c\<!-- TOP_CONTRIBUTORS_START -->\n$CONTRIBUTORS_TABLE\n<!-- TOP_CONTRIBUTORS_END -->' profile/README.md
 
-      - name: Commit changes
+      - name: Configure Git
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-          git add .
-          git commit -m 'Update top contributors'
-          git push
+
+      - name: Commit changes
         env:
-          GITHUB_TOKEN: ${{ secrets.ACTIONS_PAT }}
-          GIT_ASKPASS: echo
-          GIT_USERNAME: github-actions
-          GIT_PASSWORD: ${{ secrets.ACTIONS_PAT }}
+          ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
+        run: |
+          git add profile/README.md
+          git commit -m 'Update top contributors'
+          git push https://github-actions:$ACTIONS_PAT@github.com/TrussIntelligence/.github.git HEAD:main
