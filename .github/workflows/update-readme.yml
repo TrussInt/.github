@@ -38,3 +38,8 @@ jobs:
           git add README.md
           git commit -m 'Update top contributors'
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_PAT }}
+          GIT_ASKPASS: echo
+          GIT_USERNAME: github-actions
+          GIT_PASSWORD: ${{ secrets.ACTIONS_PAT }}
