@@ -2,8 +2,8 @@ name: Update README with Top Contributors
 
 on:
   schedule:
-    - cron: "0 0 1 * *" # Run every Sunday at midnight UTC
-  workflow_dispatch: # Allow manual triggering of the workflow
+    - cron: "0 0 1 * *"
+  workflow_dispatch:
 
 jobs:
   update-readme:
@@ -11,12 +11,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ACTIONS_PAT }}
 
       - name: Get top contributors
         id: get_contributors
         run: |
-          TOP_CONTRIBUTORS=$(curl -s "https://api.github.com/orgs/TrussIntelligence/repos?per_page=100" | jq -r '.[].contributors_url' | xargs -n1 curl -s | jq -r '.[] | "\(.login) \(.contributions)"' | sort -k2 -nr | head -n 5)
+          TOP_CONTRIBUTORS=$(curl -s "https://api.github.com/orgs/TrussInt/repos?per_page=100" | jq -r '.[].contributors_url' | xargs -n1 curl -s | jq -r '.[] | "\(.login) \(.contributions)"' | sort -k2 -nr | head -n 5)
           echo "$TOP_CONTRIBUTORS" > top_contributors.txt
 
       - name: Update README
@@ -33,8 +36,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Commit changes
         env:
@@ -42,4 +45,4 @@ jobs:
         run: |
           git add profile/README.md
           git commit -m 'Update top contributors'
-          git push https://github-actions:$ACTIONS_PAT@github.com/TrussInt/.github.git HEAD:main
+          git push origin main
