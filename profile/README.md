@@ -7,11 +7,7 @@ Welcome to the **Truss Intelligence** GitHub organization! We are committed to d
 We believe in recognizing and celebrating the hard work and dedication of our contributors. Below is a dashboard showcasing the top contributors to our repositories.
 
 <!-- TOP_CONTRIBUTORS_START -->
-| 🏆 Rank | 👤 Contributor | 📈 Contributions |
-|------|-------------|----------------|
-| 1    | @contributor1 | 150 commits   |
-| 2    | @contributor2 | 120 commits   |
-| 3    | @contributor3 | 100 commits   |
+$CONTRIBUTORS_TABLE
 <!-- TOP_CONTRIBUTORS_END -->
 
 *(Note: The data in the table above is for illustrative purposes. The actual top contributors will be dynamically updated based on the contributions to our repositories.)*
