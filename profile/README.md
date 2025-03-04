@@ -7,10 +7,14 @@ Welcome to the **Truss Intelligence** GitHub organization! We are committed to d
 We believe in recognizing and celebrating the hard work and dedication of our contributors. Below is a dashboard showcasing the top contributors to our repositories.
 
 <!-- TOP_CONTRIBUTORS_START -->
-$CONTRIBUTORS_TABLE
-<!-- TOP_CONTRIBUTORS_END -->
 
-*(Note: The data in the table above is for illustrative purposes. The actual top contributors will be dynamically updated based on the contributions to our repositories.)*
+| 🏆 Rank | 👤 Contributor | 📈 Contributions |
+| ------- | -------------- | ---------------- |
+| 1       | @Extector      | 0 commits        |
+| 2       | @Fabiano       | 0 commits        |
+| 3       | @Ariel         | 0 commits        |
+
+<!-- TOP_CONTRIBUTORS_END -->
 
 ## 🛠️ About Us
 
@@ -20,6 +24,6 @@ $CONTRIBUTORS_TABLE
 
 For any inquiries or further information, please reach out to us:
 
-- ✉️ Email: [info@trussintelligence.com](mailto:info@trussintelligence.com)
+- ✉️ Email: [development@trussint.com](mailto:info@trussint.com)
 - 🐦 Twitter: [@TrussIntelligence](https://twitter.com/TrussIntelligence)
 - 💼 LinkedIn: [Truss Intelligence](https://linkedin.com/company/truss-intelligence)

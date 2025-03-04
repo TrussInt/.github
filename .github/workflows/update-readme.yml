@@ -5,6 +5,9 @@ on:
     - cron: "0 0 1 * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   update-readme:
     runs-on: ubuntu-latest
@@ -13,36 +16,59 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: main
-          token: ${{ secrets.ACTIONS_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get top contributors
         id: get_contributors
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TOP_CONTRIBUTORS=$(curl -s "https://api.github.com/orgs/TrussInt/repos?per_page=100" | jq -r '.[].contributors_url' | xargs -n1 curl -s | jq -r '.[] | "\(.login) \(.contributions)"' | sort -k2 -nr | head -n 5)
+          TOP_CONTRIBUTORS=$(curl -s -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/orgs/TrussInt/repos?per_page=100" | jq -r '.[].contributors_url' | xargs -I {} curl -s -H "Authorization: Bearer $GH_TOKEN" {} | jq -r '.[] | "\(.login) \(.contributions)"' | sort -k2 -nr | head -n 3)
           echo "$TOP_CONTRIBUTORS" > top_contributors.txt
 
       - name: Update README
         run: |
-          CONTRIBUTORS_TABLE="| Rank | Contributor | Contributions |\n|------|-------------|----------------|"
+          # Create the contributors table
+          CONTRIBUTORS_TABLE="| 🏆 Rank | 👤 Contributor | 📈 Contributions |\n|------|-------------|----------------|\n"
           rank=1
-          while read -r line; do
-            login=$(echo "$line" | awk '{print $1}')
-            contributions=$(echo "$line" | awk '{print $2}')
-            CONTRIBUTORS_TABLE="$CONTRIBUTORS_TABLE\n| $rank | @$login | $contributions commits |"
+          while IFS=' ' read -r login contributions; do
+            CONTRIBUTORS_TABLE="${CONTRIBUTORS_TABLE}| $rank | @$login | $contributions commits |\n"
             rank=$((rank + 1))
           done < top_contributors.txt
-          sed -i '/<!-- TOP_CONTRIBUTORS_START -->/,/<!-- TOP_CONTRIBUTORS_END -->/c\<!-- TOP_CONTRIBUTORS_START -->\n$CONTRIBUTORS_TABLE\n<!-- TOP_CONTRIBUTORS_END -->' profile/README.md
+
+          # Update the file while preserving the rest of the content
+          if [ -f "profile/README.md" ]; then
+            # Create a temporary file
+            awk -v table="$CONTRIBUTORS_TABLE" '
+            /<!-- TOP_CONTRIBUTORS_START -->/{
+              print "<!-- TOP_CONTRIBUTORS_START -->"
+              print table
+              skip=1
+              next
+            }
+            /<!-- TOP_CONTRIBUTORS_END -->/{
+              print "<!-- TOP_CONTRIBUTORS_END -->"
+              skip=0
+              next
+            }
+            !skip{print}
+            ' profile/README.md > temp_readme.md
+            
+            # Replace the original file with the updated content
+            mv temp_readme.md profile/README.md
+          fi
 
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Commit changes
-        env:
-          ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Commit and Push changes
         run: |
           git add profile/README.md
-          git commit -m 'Update top contributors'
+          git commit -m "Update top contributors ${{steps.date}}"
           git push origin main
