@@ -7,12 +7,10 @@ Welcome to the **Truss Intelligence** GitHub organization! We are committed to d
 We believe in recognizing and celebrating the hard work and dedication of our contributors. Below is a dashboard showcasing the top contributors to our repositories.
 
 <!-- TOP_CONTRIBUTORS_START -->
-
 | 🏆 Rank | 👤 Contributor | 📈 Contributions |
-| ------- | -------------- | ---------------- |
-| 1       | @Extector      | 0 commits        |
-| 2       | @Fabiano       | 0 commits        |
-| 3       | @Ariel         | 0 commits        |
+|------|-------------|----------------|
+| 1 | @Extector | 14 commits |
+| 2 | @github-actions[bot] | 1 commits |
 
 <!-- TOP_CONTRIBUTORS_END -->
 
