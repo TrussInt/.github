@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ACTIONS_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get top contributors
         id: get_contributors
