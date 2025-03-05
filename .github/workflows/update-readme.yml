@@ -16,22 +16,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ACTIONS_PAT }}
 
       - name: Get top contributors
         id: get_contributors
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
         run: |
           echo "" > all_contributions.txt
 
-          REPOS=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
+          REPOS=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
             "https://api.github.com/orgs/TrussInt/repos?per_page=100" \
             | jq -r '.[].full_name')
 
           for REPO in $REPOS; do
             echo "Processing repository: $REPO"
-            REPO_CONTRIBUTORS=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
+            REPO_CONTRIBUTORS=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
               "https://api.github.com/repos/$REPO/contributors?per_page=100" \
               | jq -r '.[] | "\(.login) \(.contributions)"')
             echo "$REPO_CONTRIBUTORS" >> all_contributions.txt
