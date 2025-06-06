@@ -11,7 +11,7 @@ We believe in recognizing and celebrating the hard work and dedication of our co
 |------|-------------|----------------|
 | 1 | @GitArika | 318 commits |
 | 2 | @Extector | 250 commits |
-| 3 | @FabianoArthur | 163 commits |
+| 3 | @FabianoArthur | 243 commits |
 | 4 | @tbn-luisCampos | 90 commits |
 | 5 | @tmrbento | 47 commits |
 
