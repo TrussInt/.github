@@ -18,7 +18,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get top contributors by commit count from all branches
+      - name: Get commits from the last month
         id: get_contributors
         env:
           ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
@@ -26,40 +26,38 @@ jobs:
           # Create an empty file to store all commit authors
           echo "" > all_commits.txt
 
-          # Get a list of all repositories in the organization
-          REPOS=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
-            "https://api.github.com/orgs/TrussInt/repos?per_page=100" \
-            | jq -r '.[].full_name')
+          # Calculate the date one month ago in ISO 8601 format (UTC)
+          SINCE_DATE=$(date -u -d '1 month ago' +'%Y-%m-%dT%H:%M:%SZ')
+          echo "Fetching commits since $SINCE_DATE"
 
-          for REPO in $REPOS; do
+          # Define the specific repositories to check
+          REPOS=("TrussInt/lhg-frontend-react" "TrussInt/trussint-api")
+
+          # Define the specific branch to check
+          BRANCH="staging"
+
+          # Loop through each specified repository
+          for REPO in "${REPOS[@]}"; do
             echo "Processing repository: $REPO"
+            echo "--> Fetching commits from branch: $BRANCH"
             
-            # Dynamically get all branches for the current repository
-            echo "--> Discovering branches..."
-            REPO_BRANCHES=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
-              "https://api.github.com/repos/$REPO/branches?per_page=100" \
-              | jq -r '.[].name')
+            # Fetch commits from the last month on the staging branch
+            API_RESPONSE=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
+              "https://api.github.com/repos/$REPO/commits?sha=$BRANCH&since=$SINCE_DATE&per_page=100")
 
-            # Loop through each discovered branch
-            for BRANCH in $REPO_BRANCHES; do
-              echo "    Fetching commits from branch: $BRANCH"
-              
-              # Fetch the API response for commits on the current branch
-              API_RESPONSE=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
-                "https://api.github.com/repos/$REPO/commits?sha=$BRANCH&per_page=100")
+            # Check if the API returned a valid list of commits
+            if ! echo "$API_RESPONSE" | jq -e 'if type=="array" then true else false end' > /dev/null; then
+              echo "--> Warning: Branch '$BRANCH' not found or could not be processed in '$REPO'. Skipping."
+              continue
+            fi
 
-              # Check if the API returned a valid list of commits
-              if ! echo "$API_RESPONSE" | jq -e 'if type=="array" then true else false end' > /dev/null; then
-                echo "--> Warning: Branch '$BRANCH' could not be processed in '$REPO'. Skipping."
-                continue
-              fi
-
-              # Extract the login of every commit author and append to the master list
-              COMMIT_AUTHORS=$(echo "$API_RESPONSE" | jq -r '.[].author.login | select(. != null)')
-              if [ -n "$COMMIT_AUTHORS" ]; then
-                echo "$COMMIT_AUTHORS" >> all_commits.txt
-              fi
-            done
+            # Extract the login of every commit author and append to the master list
+            COMMIT_AUTHORS=$(echo "$API_RESPONSE" | jq -r '.[].author.login | select(. != null)')
+            if [ -n "$COMMIT_AUTHORS" ]; then
+              echo "$COMMIT_AUTHORS" >> all_commits.txt
+            else
+              echo "--> No new commits found in the last month for $REPO/$BRANCH."
+            fi
           done
 
           echo "Aggregating total commit counts for each user..."
@@ -68,7 +66,7 @@ jobs:
 
           echo "$TOP_CONTRIBUTORS" > top_contributors.txt
 
-          echo "Top 5 contributors by commit count:"
+          echo "Top 5 contributors by commit count in the last month:"
           cat top_contributors.txt
 
       - name: Update README
