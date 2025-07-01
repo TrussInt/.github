@@ -35,9 +35,19 @@ jobs:
             echo "Processing repository: $REPO"
             for BRANCH in "${BRANCHES[@]}"; do
               echo "Fetching commits from branch: $BRANCH"
-              COMMIT_AUTHORS=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
-                "https://api.github.com/repos/$REPO/commits?sha=$BRANCH&per_page=100" \
-                | jq -r '.[].author.login | select(. != null)')
+              
+              # Fetch API response
+              API_RESPONSE=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
+                "https://api.github.com/repos/$REPO/commits?sha=$BRANCH&per_page=100")
+
+              # Check if the response is a valid JSON array (a list of commits)
+              # If not, it's likely an error (e.g., branch not found), so we skip it
+              if ! echo "$API_RESPONSE" | jq -e 'if type=="array" then true else false end' > /dev/null; then
+                echo "--> Warning: Branch '$BRANCH' not found or empty in '$REPO'. Skipping."
+                continue
+              fi
+
+              COMMIT_AUTHORS=$(echo "$API_RESPONSE" | jq -r '.[].author.login | select(. != null)')
               
               if [ -n "$COMMIT_AUTHORS" ]; then
                 echo "$COMMIT_AUTHORS" >> all_commits.txt
@@ -46,7 +56,8 @@ jobs:
           done
 
           echo "Aggregating commit counts..."
-          TOP_CONTRIBUTORS=$(sort all_commits.txt | uniq -c | sort -nr | head -n 5 | awk '{print $2, $1}')
+          # Filter out empty lines before processing
+          TOP_CONTRIBUTORS=$(grep -v '^$' all_commits.txt | sort | uniq -c | sort -nr | head -n 5 | awk '{print $2, $1}')
 
           echo "$TOP_CONTRIBUTORS" > top_contributors.txt
 
