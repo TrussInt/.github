@@ -11,8 +11,8 @@ We believe in recognizing and celebrating the hard work and dedication of our co
 |------|-------------|----------------|
 | 1 | @GitArika | commits: 72 commits |
 | 2 | @Extector | commits: 51 commits |
-| 3 | @tmrbento | commits: 30 commits |
-| 4 | @FabianoArthur | commits: 30 commits |
+| 3 | @FabianoArthur | commits: 49 commits |
+| 4 | @tmrbento | commits: 30 commits |
 | 5 | @adriano-vieira-dev | commits: 17 commits |
 
 <!-- TOP_CONTRIBUTORS_END -->
