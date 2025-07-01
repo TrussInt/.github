@@ -18,34 +18,35 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get top contributors
+      - name: Get top contributors from specific branches
         id: get_contributors
         env:
           ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
         run: |
-          echo "" > all_contributions.txt
+          echo "" > all_commits.txt
 
           REPOS=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
             "https://api.github.com/orgs/TrussInt/repos?per_page=100" \
             | jq -r '.[].full_name')
 
+          BRANCHES=("dev" "main" "staging")
+
           for REPO in $REPOS; do
             echo "Processing repository: $REPO"
-            REPO_CONTRIBUTORS=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
-              "https://api.github.com/repos/$REPO/contributors?per_page=100" \
-              | jq -r '.[] | "\(.login) \(.contributions)"')
-            echo "$REPO_CONTRIBUTORS" >> all_contributions.txt
+            for BRANCH in "${BRANCHES[@]}"; do
+              echo "Fetching commits from branch: $BRANCH"
+              COMMIT_AUTHORS=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
+                "https://api.github.com/repos/$REPO/commits?sha=$BRANCH&per_page=100" \
+                | jq -r '.[].author.login | select(. != null)')
+              
+              if [ -n "$COMMIT_AUTHORS" ]; then
+                echo "$COMMIT_AUTHORS" >> all_commits.txt
+              fi
+            done
           done
 
-          echo "Aggregating contributions..."
-          TOP_CONTRIBUTORS=$(awk '
-            NF {
-              contributions[$1] += $2
-            }
-            END {
-              for (user in contributions)
-                print user, contributions[user]
-            }' all_contributions.txt | sort -k2 -nr | head -n 5)
+          echo "Aggregating commit counts..."
+          TOP_CONTRIBUTORS=$(sort all_commits.txt | uniq -c | sort -nr | head -n 5 | awk '{print $2, $1}')
 
           echo "$TOP_CONTRIBUTORS" > top_contributors.txt
 
