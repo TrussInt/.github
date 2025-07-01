@@ -9,11 +9,11 @@ We believe in recognizing and celebrating the hard work and dedication of our co
 <!-- TOP_CONTRIBUTORS_START -->
 | 🏆 Rank | 👤 Contributor | 📈 Total Contributions |
 |------|-------------|----------------|
-| 1 | @GitArika | commits: 5592 commits |
-| 2 | @Extector | commits: 4434 commits |
-| 3 | @FabianoArthur | commits: 3022 commits |
-| 4 | @tmrbento | commits: 1785 commits |
-| 5 | @pedropinheiro75 | commits: 641 commits |
+| 1 | @GitArika | commits: 72 commits |
+| 2 | @Extector | commits: 51 commits |
+| 3 | @tmrbento | commits: 30 commits |
+| 4 | @FabianoArthur | commits: 30 commits |
+| 5 | @adriano-vieira-dev | commits: 17 commits |
 
 <!-- TOP_CONTRIBUTORS_END -->
 
