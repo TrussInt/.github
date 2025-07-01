@@ -18,50 +18,57 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get top contributors from specific branches
+      - name: Get top contributors by commit count from all branches
         id: get_contributors
         env:
           ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
         run: |
+          # Create an empty file to store all commit authors
           echo "" > all_commits.txt
 
+          # Get a list of all repositories in the organization
           REPOS=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
             "https://api.github.com/orgs/TrussInt/repos?per_page=100" \
             | jq -r '.[].full_name')
 
-          BRANCHES=("dev" "main" "staging")
-
           for REPO in $REPOS; do
             echo "Processing repository: $REPO"
-            for BRANCH in "${BRANCHES[@]}"; do
-              echo "Fetching commits from branch: $BRANCH"
+            
+            # Dynamically get all branches for the current repository
+            echo "--> Discovering branches..."
+            REPO_BRANCHES=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
+              "https://api.github.com/repos/$REPO/branches?per_page=100" \
+              | jq -r '.[].name')
+
+            # Loop through each discovered branch
+            for BRANCH in $REPO_BRANCHES; do
+              echo "    Fetching commits from branch: $BRANCH"
               
-              # Fetch API response
+              # Fetch the API response for commits on the current branch
               API_RESPONSE=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
                 "https://api.github.com/repos/$REPO/commits?sha=$BRANCH&per_page=100")
 
-              # Check if the response is a valid JSON array (a list of commits)
-              # If not, it's likely an error (e.g., branch not found), so we skip it
+              # Check if the API returned a valid list of commits
               if ! echo "$API_RESPONSE" | jq -e 'if type=="array" then true else false end' > /dev/null; then
-                echo "--> Warning: Branch '$BRANCH' not found or empty in '$REPO'. Skipping."
+                echo "--> Warning: Branch '$BRANCH' could not be processed in '$REPO'. Skipping."
                 continue
               fi
 
+              # Extract the login of every commit author and append to the master list
               COMMIT_AUTHORS=$(echo "$API_RESPONSE" | jq -r '.[].author.login | select(. != null)')
-              
               if [ -n "$COMMIT_AUTHORS" ]; then
                 echo "$COMMIT_AUTHORS" >> all_commits.txt
               fi
             done
           done
 
-          echo "Aggregating commit counts..."
-          # Filter out empty lines before processing
-          TOP_CONTRIBUTORS=$(grep -v '^$' all_commits.txt | sort | uniq -c | sort -nr | head -n 5 | awk '{print $2, $1}')
+          echo "Aggregating total commit counts for each user..."
+          # Count every commit for each user and get the top 5
+          TOP_CONTRIBUTORS=$(grep -v '^$' all_commits.txt | sort | uniq -c | sort -nr | head -n 5 | awk '{print $2, "commits:", $1}')
 
           echo "$TOP_CONTRIBUTORS" > top_contributors.txt
 
-          echo "Top contributors found:"
+          echo "Top 5 contributors by commit count:"
           cat top_contributors.txt
 
       - name: Update README
