@@ -104,6 +104,6 @@ jobs:
 
       - name: Commit and Push changes
         run: |
-          git add profile/README.md
+          git add .
           git commit -m "Update top contributors ($(date -u '+%Y-%m-%d %H:%M:%S UTC'))"
           git push
