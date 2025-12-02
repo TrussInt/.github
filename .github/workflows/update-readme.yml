@@ -8,102 +8,37 @@ on:
 permissions:
   contents: write
 
+env:
+  TARGET_BRANCH: "staging"
+  REPOS: |
+    TrussInt/lhg-frontend-react
+    TrussInt/trussint-api
+    TrussInt/big-brother-internal-api
+    TrussInt/telemetry-web
+    TrussInt/telemetry-ios
+    TrussInt/lhg-app-ios
+
 jobs:
   update-readme:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
 
-      - name: Get commits from the last month
-        id: get_contributors
+      - name: Run contributor extractor
         env:
           ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
-        run: |
-          # Create an empty file to store all commit authors
-          echo "" > all_commits.txt
-
-          # Calculate the date one month ago in ISO 8601 format (UTC)
-          SINCE_DATE=$(date -u -d '1 month ago' +'%Y-%m-%dT%H:%M:%SZ')
-          echo "Fetching commits since $SINCE_DATE"
-
-          # Define the specific repositories to check
-          REPOS=("TrussInt/lhg-frontend-react" "TrussInt/trussint-api" "TrussInt/big-brother-internal-api" "TrussInt/telemetry-web" "TrussInt/telemetry-ios" "TrussInt/lhg-app-ios")
-
-          # Define the specific branch to check
-          BRANCH="staging"
-
-          # Loop through each specified repository
-          for REPO in "${REPOS[@]}"; do
-            echo "Processing repository: $REPO"
-            echo "--> Fetching commits from branch: $BRANCH"
-            
-            # Fetch commits from the last month on the staging branch
-            API_RESPONSE=$(curl -s -H "Authorization: Bearer $ACTIONS_PAT" \
-              "https://api.github.com/repos/$REPO/commits?sha=$BRANCH&since=$SINCE_DATE&per_page=100")
-
-            # Check if the API returned a valid list of commits
-            if ! echo "$API_RESPONSE" | jq -e 'if type=="array" then true else false end' > /dev/null; then
-              echo "--> Warning: Branch '$BRANCH' not found or could not be processed in '$REPO'. Skipping."
-              continue
-            fi
-
-            # Extract the login of every commit author and append to the master list
-            COMMIT_AUTHORS=$(echo "$API_RESPONSE" | jq -r '.[].author.login | select(. != null)')
-            if [ -n "$COMMIT_AUTHORS" ]; then
-              echo "$COMMIT_AUTHORS" >> all_commits.txt
-            else
-              echo "--> No new commits found in the last month for $REPO/$BRANCH."
-            fi
-          done
-
-          echo "Aggregating total commit counts for each user..."
-          # Count every commit for each user and get the top 5
-          TOP_CONTRIBUTORS=$(grep -v '^$' all_commits.txt | sort | uniq -c | sort -nr | head -n 5 | awk '{print $2, "commits:", $1}')
-
-          echo "$TOP_CONTRIBUTORS" > top_contributors.txt
-
-          echo "Top 5 contributors by commit count in the last month:"
-          cat top_contributors.txt
+        run: bash .github/scripts/get_top_contributors.sh 
 
       - name: Update README
-        run: |
-          CONTRIBUTORS_TABLE="| 🏆 Rank | 👤 Contributor | 📈 Total Contributions |\n|------|-------------|----------------|\n"
-          rank=1
-          while IFS=' ' read -r login contributions; do
-            CONTRIBUTORS_TABLE="${CONTRIBUTORS_TABLE}| $rank | @$login | $contributions commits |\n"
-            rank=$((rank + 1))
-          done < top_contributors.txt
+        run: bash .github/scripts/update_readme.sh
 
-          if [ -f "profile/README.md" ]; then
-            awk -v table="$CONTRIBUTORS_TABLE" '
-            /<!-- TOP_CONTRIBUTORS_START -->/{
-              print "<!-- TOP_CONTRIBUTORS_START -->"
-              print table
-              skip=1
-              next
-            }
-            /<!-- TOP_CONTRIBUTORS_END -->/{
-              print "<!-- TOP_CONTRIBUTORS_END -->"
-              skip=0
-              next
-            }
-            !skip{print}
-            ' profile/README.md > temp_readme.md
-            
-            mv temp_readme.md profile/README.md
-          fi
-
-      - name: Configure Git
+      - name: Commit and Push
         run: |
+        
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Commit and Push changes
-        run: |
-          git add .
-          git commit -m "Update top contributors ($(date -u '+%Y-%m-%d %H:%M:%S UTC'))"
+          git add profile/README.md
+          git commit -m "Update top contributors ($(date -u '+%Y-%m-%d %H:%M:%S UTC'))" || exit 0
           git push
