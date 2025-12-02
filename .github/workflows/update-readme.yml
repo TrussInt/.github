@@ -31,7 +31,7 @@ jobs:
           echo "Fetching commits since $SINCE_DATE"
 
           # Define the specific repositories to check
-          REPOS=("TrussInt/lhg-frontend-react" "TrussInt/trussint-api")
+          REPOS=("TrussInt/lhg-frontend-react" "TrussInt/trussint-api" "TrussInt/big-brother-internal-api" "TrussInt/telemetry-web" "TrussInt/telemetry-ios" "TrussInt/lhg-app-ios")
 
           # Define the specific branch to check
           BRANCH="staging"
