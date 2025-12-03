@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 if [[ -z "${ACTIONS_PAT:-}" ]]; then
-  echo "ERROR: ACTIONS_PAT is not set. Please check your GitHub Actions secrets." >&2
+  echo "ERROR: ACTIONS_PAT is not set."
   exit 1
 fi
 
@@ -11,29 +11,30 @@ SINCE_DATE=$(date -u -d '1 month ago' +'%Y-%m-%dT%H:%M:%SZ')
 
 get_default_branch() {
   local repo="$1"
-  for branch in dev main; do
-    http_code=$(curl -s -o /dev/null -w "%{http_code}" \
-      -H "Authorization: Bearer $ACTIONS_PAT" \
-      "https://api.github.com/repos/$repo/branches/$branch")
-    if [[ "$http_code" == "200" ]]; then
-      echo "$branch"
-      return
-    else
-      echo "Checked $repo/$branch, received HTTP $http_code" >&2
-    fi
-  done
-  echo "Debug: Raw response for $repo/main:" >&2
-  curl -s \
+  http_code_dev=$(curl -s -o /dev/null -w "%{http_code}" \
     -H "Authorization: Bearer $ACTIONS_PAT" \
-    "https://api.github.com/repos/$repo/branches/main" >&2
-  echo "No dev or main branch found for $repo" >&2
+    "https://api.github.com/repos/$repo/branches/dev")
+  if [[ "$http_code_dev" == "200" ]]; then
+    echo "dev"
+    return 0
+  fi
+
+  http_code_main=$(curl -s -o /dev/null -w "%{http_code}" \
+    -H "Authorization: Bearer $ACTIONS_PAT" \
+    "https://api.github.com/repos/$repo/branches/main")
+  if [[ "$http_code_main" == "200" ]]; then
+    echo "main"
+    return 0
+  fi
+
+  echo "WARNING: No dev or main branch found for $repo or missing permissions" >&2
   return 1
 }
 
 fetch_commits() {
   local repo=$1
   local TARGET_BRANCH
-  TARGET_BRANCH=$(get_default_branch "$repo") || return  # Skip repo if neither branch
+  TARGET_BRANCH=$(get_default_branch "$repo") || { echo "Skipping $repo"; return 0; }
 
   local page=1
 
@@ -56,10 +57,13 @@ fetch_commits() {
 
     page=$((page + 1))
   done
+  return 0
 }
 
 echo "$REPOS" | while read -r repo; do
-  [[ -n "$repo" ]] && fetch_commits "$repo"
+  if [[ -n "$repo" ]]; then
+    fetch_commits "$repo" || echo "Skip $repo, error ignored"
+  fi
 done
 
 grep -v '^$' all_commits.txt \
