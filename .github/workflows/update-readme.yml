@@ -14,7 +14,7 @@ env:
     TrussInt/lhg-frontend-react
     TrussInt/trussint-api
     TrussInt/big-brother-internal-api
-    TrussInt/telemetry-web
+    TrussInt/temeletry-web
     TrussInt/telemetry-ios
     TrussInt/lhg-app-ios
 
