@@ -7,12 +7,13 @@ Welcome to the **Truss Intelligence** GitHub organization! We are committed to d
 We believe in recognizing and celebrating the hard work and dedication of our contributors. Below is a dashboard showcasing the top contributors to our repositories.
 
 <!-- TOP_CONTRIBUTORS_START -->
-| 🏆 Rank | 👤 Contributor | 📈 Total Contributions |
-|------|-------------|----------------|
-| 1 | @GitArika | commits: 13 commits |
-| 2 | @Extector | commits: 10 commits |
-| 3 | @MatthewLacerda2 | commits: 7 commits |
-| 4 | @FabianoArthur | commits: 1 commits |
+| Rank | Contributor | Commits |
+|------|-------------|----------|
+| 1 | @GitArika | 75 |
+| 2 | @Extector | 38 |
+| 3 | @MatthewLacerda2 | 37 |
+| 4 | @FabianoArthur | 18 |
+| 5 | @adriano-vieira-dev | 9 |
 
 <!-- TOP_CONTRIBUTORS_END -->
 
