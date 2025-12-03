@@ -4,8 +4,27 @@ set -euo pipefail
 SINCE_DATE=$(date -u -d '1 month ago' +'%Y-%m-%dT%H:%M:%SZ')
 > all_commits.txt
 
+get_default_branch() {
+  local repo="$1"
+  # Try dev; fallback to main
+  for branch in dev main; do
+    http_code=$(curl -s -o /dev/null -w "%{http_code}" \
+      -H "Authorization: Bearer $ACTIONS_PAT" \
+      "https://api.github.com/repos/$repo/branches/$branch")
+    if [[ "$http_code" == "200" ]]; then
+      echo "$branch"
+      return
+    fi
+  done
+  echo "No dev or main branch found for $repo" >&2
+  return 1
+}
+
 fetch_commits() {
   local repo=$1
+  local TARGET_BRANCH
+  TARGET_BRANCH=$(get_default_branch "$repo") || return  # Skip repo if neither branch
+
   local page=1
 
   while :; do
