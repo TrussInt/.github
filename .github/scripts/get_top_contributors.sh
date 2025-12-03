@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ -z "${ACTIONS_PAT:-}" ]]; then
+  echo "ERROR: ACTIONS_PAT is not set. Please check your GitHub Actions secrets." >&2
+  exit 1
+fi
+
 SINCE_DATE=$(date -u -d '1 month ago' +'%Y-%m-%dT%H:%M:%SZ')
 > all_commits.txt
 
 get_default_branch() {
   local repo="$1"
-  # Try dev; fallback to main
   for branch in dev main; do
     http_code=$(curl -s -o /dev/null -w "%{http_code}" \
       -H "Authorization: Bearer $ACTIONS_PAT" \
@@ -14,8 +18,14 @@ get_default_branch() {
     if [[ "$http_code" == "200" ]]; then
       echo "$branch"
       return
+    else
+      echo "Checked $repo/$branch, received HTTP $http_code" >&2
     fi
   done
+  echo "Debug: Raw response for $repo/main:" >&2
+  curl -s \
+    -H "Authorization: Bearer $ACTIONS_PAT" \
+    "https://api.github.com/repos/$repo/branches/main" >&2
   echo "No dev or main branch found for $repo" >&2
   return 1
 }
