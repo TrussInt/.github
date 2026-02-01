@@ -9,10 +9,11 @@ We believe in recognizing and celebrating the hard work and dedication of our co
 <!-- TOP_CONTRIBUTORS_START -->
 | Rank | Contributor | Commits |
 |------|-------------|----------|
-| 1 | @GitArika | 50 |
-| 2 | @FabianoArthur | 23 |
-| 3 | @MatthewLacerda2 | 22 |
-| 4 | @Extector | 10 |
+| 1 | @MatthewLacerda2 | 74 |
+| 2 | @Fabiano-Arthur | 34 |
+| 3 | @GitArika | 32 |
+| 4 | @Leon4rdoMesquit4 | 18 |
+| 5 | @Extector | 11 |
 
 <!-- TOP_CONTRIBUTORS_END -->
 
