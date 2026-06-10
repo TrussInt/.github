@@ -17,6 +17,12 @@ env:
     TrussInt/telemetry-web
     TrussInt/telemetry-ios
     TrussInt/lhg-app-ios
+    TrussInt/maintenance-backend
+    TrussInt/maintenance-frontend
+    TrussInt/dataforce-2.0
+    TrussInt/hidrofleet
+    TrussInt/parks-backend
+    TrussInt/apresentacao-hidrofleet
 
 jobs:
   update-readme:
